@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <sstream>
-#include "workshop.cpp"
+#include "workshop.h"
+#include "robot.h"
 
 using namespace std;
 int framenum = 1,totalmoney = 0,workshopnum = 0;
@@ -84,6 +85,9 @@ int main() {
         for(int robotId = 0; robotId < 4; robotId++){
             printf("forward %d %d\n", robotId, lineSpeed);
             printf("rotate %d %f\n", robotId, angleSpeed);
+            printf("buy %d\n", robotId);
+            printf("sell %d\n", robotId);
+            printf("destory %d\n", robotId);
         }
         printf("OK\n", frameID);
         fflush(stdout);
