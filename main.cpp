@@ -58,7 +58,7 @@ bool readUntilOK() {
             initialization(count++,line);
             continue;
         }
-        if(count >=3 && i <= workshopnum)
+        if(count >= 3 && i <= workshopnum)
         {
             create_workshop(i++,line);
             continue;

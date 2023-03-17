@@ -1,4 +1,7 @@
 #include <iostream>
+#include <cstring>
+#include <sstream>
+
 using namespace std;
 #include "workshop.h"
 workshop w[50];
