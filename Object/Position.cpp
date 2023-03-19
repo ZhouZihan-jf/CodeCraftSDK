@@ -4,16 +4,16 @@
 #include "Position.h"
 
 
-void Position::setPosition(float x, float y) {
+void Position::setPosition(double x, double y) {
     Position::x = x;
     Position::y = y;
 }
 
-float Position::getX() const {
+double Position::getX() const {
     return x;
 }
 
-float Position::getY() const {
+double Position::getY() const {
     return y;
 }
 
@@ -21,7 +21,7 @@ Position::Position() {
 
 }
 
-Position::Position(float x, float y) {
+Position::Position(double x, double y) {
     Position::x = x;
     Position::y = y;
 

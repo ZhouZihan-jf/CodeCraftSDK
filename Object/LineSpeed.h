@@ -8,11 +8,13 @@
 
 class LineSpeed {
 private:
-    float x, y;
+    double x, y;
 public:
-    void setLineSpeed(float x,float y);
+    LineSpeed();
+    LineSpeed(double x, double y);
+    void setLineSpeed(double x,double y);
 
-    float getModule() const;
+    double getModule() const;
 
 };
 

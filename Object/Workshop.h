@@ -11,12 +11,12 @@
 using namespace std;
 
 class Workshop {
-    int workType{};  // 工作台类型
-    Position position{};  // 所处的位置
-    int leftProduceTime{};  // 剩余生产时间
+    int workType;  // 工作台类型
+    Position position;  // 所处的位置
+    int leftProduceTime;  // 剩余生产时间
     vector<int> materialNum; // 对materialState解析
-    int productState{};  // 产品格状态，只有0和1
-    int number{};  // 工作台自身编号
+    int productState;  // 产品格状态，只有0和1
+    int number;  // 工作台自身编号
 public:
     Workshop();
     Workshop(int workType, const Position &position);

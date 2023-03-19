@@ -21,8 +21,8 @@ bool initialization(Robot robots[], Workshop workshops[]){
             int x, y;
             x = count / 100;
             y = count % 100;
-            auto m = float((x - 1) * 0.5 + 0.25);
-            auto n = float((y - 1) * 0.5 + 0.25);
+            auto m = double((x - 1) * 0.5 + 0.25);
+            auto n = double((y - 1) * 0.5 + 0.25);
 
             if(s == '.'){  // 如果遇到.就跳过
                 continue;

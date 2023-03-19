@@ -5,15 +5,23 @@
 #include "LineSpeed.h"
 
 
-void LineSpeed::setLineSpeed(float x, float y) {
+void LineSpeed::setLineSpeed(double x, double y) {
     this->x = x;
     this->y = y;
 }
 
-float LineSpeed::getModule() const{
-    float x = this->x;
-    float y = this->y;
+double LineSpeed::getModule() const{
+    double x = this->x;
+    double y = this->y;
 
     return std::sqrt(x*x + y*y);
+}
+
+LineSpeed::LineSpeed() {
+}
+
+LineSpeed::LineSpeed(double x, double y) {
+    this->x = x;
+    this->y = y;
 }
 

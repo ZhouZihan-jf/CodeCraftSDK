@@ -20,27 +20,27 @@ void Robot::setItemType(int itemType) {
     Robot::itemType = itemType;
 }
 
-float Robot::getTimeWorth() const {
+double Robot::getTimeWorth() const {
     return timeWorth;
 }
 
-void Robot::setTimeWorth(float timeWorth) {
+void Robot::setTimeWorth(double timeWorth) {
     Robot::timeWorth = timeWorth;
 }
 
-float Robot::getCollisionWorth() const {
+double Robot::getCollisionWorth() const {
     return collisionWorth;
 }
 
-void Robot::setCollisionWorth(float collisionWorth) {
+void Robot::setCollisionWorth(double collisionWorth) {
     Robot::collisionWorth = collisionWorth;
 }
 
-float Robot::getRotate() const {
+double Robot::getRotate() const {
     return rotate;
 }
 
-void Robot::setRotate(float rotate) {
+void Robot::setRotate(double rotate) {
     Robot::rotate = rotate;
 }
 
@@ -52,11 +52,11 @@ void Robot::setLineSpeed(const LineSpeed &lineSpeed) {
     Robot::lineSpeed = lineSpeed;
 }
 
-float Robot::getToward() const {
+double Robot::getToward() const {
     return toward;
 }
 
-void Robot::setToward(float toward) {
+void Robot::setToward(double toward) {
     Robot::toward = toward;
 }
 

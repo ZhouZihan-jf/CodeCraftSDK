@@ -8,14 +8,14 @@
 
 class Position {
 private:
-    float x, y;
+    double x, y;
 public:
     Position();
-    Position(float x, float y);
-    void setPosition(float x, float y);
+    Position(double x, double y);
+    void setPosition(double x, double y);
 
-    float getX() const;
-    float getY() const;
+    double getX() const;
+    double getY() const;
 
 };
 

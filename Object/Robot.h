@@ -11,14 +11,14 @@
 
 class Robot {
 private:
-    int workshopId{};  // 所处工作台id
-    int itemType{};  // 携带物品类型
-    float timeWorth{};  // 时间价值系数
-    float collisionWorth{};  // 碰撞价值系数
-    float rotate{};  // 角速度
-    LineSpeed lineSpeed{};  // 线速度
-    float toward{};  // 朝向
-    Position position{};  //机器人所处坐标
+    int workshopId;  // 所处工作台id
+    int itemType;  // 携带物品类型
+    double timeWorth;  // 时间价值系数
+    double collisionWorth;  // 碰撞价值系数
+    double rotate;  // 角速度
+    LineSpeed lineSpeed;  // 线速度
+    double toward;  // 朝向
+    Position position;  //机器人所处坐标
 public:
     Robot();
     Robot(const Position &position);
@@ -29,20 +29,20 @@ public:
     int getItemType() const;
     void setItemType(int itemType);
 
-    float getTimeWorth() const;
-    void setTimeWorth(float timeWorth);
+    double getTimeWorth() const;
+    void setTimeWorth(double timeWorth);
 
-    float getCollisionWorth() const;
-    void setCollisionWorth(float collisionWorth);
+    double getCollisionWorth() const;
+    void setCollisionWorth(double collisionWorth);
 
-    float getRotate() const;
-    void setRotate(float rotate);
+    double getRotate() const;
+    void setRotate(double rotate);
 
     const LineSpeed &getLineSpeed() const;
     void setLineSpeed(const LineSpeed &lineSpeed);
 
-    float getToward() const;
-    void setToward(float toward);
+    double getToward() const;
+    void setToward(double toward);
 
     const Position &getPosition() const;
 
