@@ -1,13 +1,15 @@
 #include <iostream>
 #include <fstream>
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <sstream>
-#include "workshop.h"
-#include "robot.h"
+#include "Object/Workshop.h"
+#include "Object/Robot.h"
 
 using namespace std;
-int framenum = 1,totalmoney = 0,workshopnum = 0;
+Robot robots[4];
+Workshop workshops[10];
+
 int initialization(int count,char *line)
 {
     const char *d = " ";
