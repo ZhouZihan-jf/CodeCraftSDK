@@ -14,13 +14,14 @@ Robot robots[4];
 Workshop workshops[10];
 
 int main() {
-    initialization(robots,workshops);
+    initialization(robots, workshops);
     puts("OK");//标准输出“ok”并换行
-    fflush(stdout);//冲洗流中的信息，缓冲区内的数据写回标准输出的文件中
-    int frameID;//帧的id号
 
+    fflush(stdout);//冲洗流中的信息，缓冲区内的数据写回标准输出的文件中
+
+    int frameID;//帧的id号
     while (scanf("%d", &frameID) != EOF) {//文件读入还没结束时进入循环
-        readUntilOK();
+        readUntilOK(robots, workshops);
         printf("%d\n", frameID);
         int lineSpeed = 3;
         double angleSpeed = 1.5;
