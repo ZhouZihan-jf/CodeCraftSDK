@@ -1,9 +1,9 @@
 //
 // Created by 10259 on 2023/3/19.
 //
-
 #include <cmath>
 #include "LineSpeed.h"
+
 
 void LineSpeed::setLineSpeed(float x, float y) {
     this->x = x;

@@ -1,8 +1,8 @@
 //
 // Created by 10259 on 2023/3/19.
 //
-
 #include "Robot.h"
+
 
 int Robot::getWorkshopId() const {
     return workshopId;
@@ -72,4 +72,4 @@ Robot::Robot(const Position &position) {
     Robot::position = position;
 }
 
-Robot::Robot() = default;
+Robot::Robot(){};

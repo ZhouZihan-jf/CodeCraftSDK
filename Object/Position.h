@@ -10,6 +10,8 @@ class Position {
 private:
     float x, y;
 public:
+    Position();
+    Position(float x, float y);
     void setPosition(float x, float y);
 
     float getX() const;

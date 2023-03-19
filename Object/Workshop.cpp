@@ -1,8 +1,8 @@
 //
 // Created by 10259 on 2023/3/19.
 //
-
 #include "Workshop.h"
+
 
 int Workshop::getWorkType() const {
     return workType;
@@ -59,5 +59,5 @@ Workshop::Workshop(int workType, const Position &position) {
 }
 
 
-Workshop::Workshop() = default;
+Workshop::Workshop(){};
 
