@@ -32,9 +32,10 @@ vector<int> calculateMaterialNum(int materialState){
     return materialNum;
 }
 
-bool readUntilOK(Robot robots[], Workshop workshops[]) {
+bool readUntilOK(Robot robots[], Workshop workshops[], int &reward){
     char line[1024];
     int robotNum = 0;
+    int workshopNum;
 
     while (fgets(line, sizeof line, stdin)) {
         if (line[0] == 'O' && line[1] == 'K') {
@@ -49,6 +50,7 @@ bool readUntilOK(Robot robots[], Workshop workshops[]) {
             p = strtok(NULL, " ");
         }
 
+        // 根据读取的信息，将其存入相应的对象中
         if(vec.size() == 10){  // 说明是机器人的信息
             if(robotNum >= 3){
                 return false;
@@ -84,8 +86,15 @@ bool readUntilOK(Robot robots[], Workshop workshops[]) {
             workshops[workType].setLeftProduceTime(leftProduceTime);
             workshops[workType].setMaterialNum(materialNum);
             workshops[workType].setProductState(productState);
+        } else if(vec.size() == 1){
+            workshopNum = int(vec[0]);
+            if (workshopNum != 9){
+                return false;
+            }
+        } else if(vec.size() == 2){
+            // 从这里可以读到frame
+            reward = int(vec[1]);
         }
-        //do something
     }
     return false;
 }

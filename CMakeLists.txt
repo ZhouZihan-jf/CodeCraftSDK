@@ -9,4 +9,4 @@ if (!WIN32)
 endif (!WIN32)
 
 AUX_SOURCE_DIRECTORY(. src)
-ADD_EXECUTABLE(main ${src} Object/LineSpeed.cpp Object/LineSpeed.h Object/Robot.cpp Object/Robot.h Object/Position.cpp Object/Position.h Object/Workshop.cpp Object/Workshop.h Function/Init.cpp Function/ReadFrame.cpp)
+ADD_EXECUTABLE(main ${src} Object/LineSpeed.cpp Object/LineSpeed.h Object/Robot.cpp Object/Robot.h Object/Position.cpp Object/Position.h Object/Workshop.cpp Object/Workshop.h Function/Init.cpp Function/ReadFrame.cpp Function/Action.cpp)
