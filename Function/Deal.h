@@ -13,11 +13,11 @@ class Deal {
 public:
     static bool initialization(Robot robots[], Workshop workshops[]);
     static vector<int> calculateMaterialNum(int materialState);
-    bool readUntilOK(Robot robots[], Workshop workshops[], int &reward);
-    double distance(Position p1, Position p2);
-    bool isNearWorkshop(Robot robot, const Workshop& workshop);
-    vector<int> getMaterialNum(const Workshop& workshop);
-    void interactWithWorkshop(Robot &robot, Workshop workshops[], int flags[]);
+    static bool readUntilOK(Robot robots[], Workshop workshops[], int &reward);
+    static double distance(Position p1, Position p2);
+    static bool isNearWorkshop(Robot robot, const Workshop& workshop);
+    static vector<int> getMaterialNum(const Workshop& workshop);
+    static void interactWithWorkshop(Robot &robot, Workshop workshops[], int flags[]);
 };
 
 

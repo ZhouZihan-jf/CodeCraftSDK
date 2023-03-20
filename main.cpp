@@ -14,8 +14,7 @@ Robot robots[4];
 Workshop workshops[10];
 
 int main() {
-    Deal deal = Deal();
-    deal.initialization(robots, workshops);
+    Deal::initialization(robots, workshops);
     puts("OK");//标准输出“ok”并换行
 
     fflush(stdout);//冲洗流中的信息，缓冲区内的数据写回标准输出的文件中
@@ -23,13 +22,13 @@ int main() {
     int frameID;//帧的id号
     int reward;//奖励
     while (scanf("%d", &frameID) != EOF) {//文件读入还没结束时进入循环
-        deal.readUntilOK(robots, workshops, reward);
+        Deal::readUntilOK(robots, workshops, reward);
         printf("%d\n", frameID);
 
         int flags[6] = {0, 0, 0, 0, 0, 0};  // 设置标记
 
         for(int robotId = 0; robotId < 4; robotId++){
-            deal.interactWithWorkshop(robots[robotId], workshops, flags);
+            Deal::interactWithWorkshop(robots[robotId], workshops, flags);
             LineSpeed lineSpeed = robots[robotId].getLineSpeed();
 
             printf("forward %d %f\n", robotId, lineSpeed.getModule());
