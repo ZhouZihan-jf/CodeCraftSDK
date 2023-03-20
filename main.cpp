@@ -7,6 +7,7 @@
 #include "Object/Robot.h"
 #include "Function/Init.cpp"
 #include "Function/ReadFrame.cpp"
+#include "Function/Action.cpp"
 using namespace std;
 
 
@@ -24,14 +25,25 @@ int main() {
     while (scanf("%d", &frameID) != EOF) {//文件读入还没结束时进入循环
         readUntilOK(robots, workshops, reward);
         printf("%d\n", frameID);
-        int lineSpeed = 3;
-        double angleSpeed = 1.5;
+
+        int flags[6] = {0, 0, 0, 0, 0, 0};
+
         for(int robotId = 0; robotId < 4; robotId++){
-            printf("forward %d %d\n", robotId, lineSpeed);
-            printf("rotate %d %f\n", robotId, angleSpeed);
-            printf("buy %d\n", robotId);
-            printf("sell %d\n", robotId);
-            printf("destory %d\n", robotId);
+            interactWithWorkshop(robots[robotId], workshops, flags);
+            LineSpeed lineSpeed = robots[robotId].getLineSpeed();
+            printf("forward %d %f\n", robotId, lineSpeed.getModule());
+            printf("rotate %d %f\n", robotId, robots[robotId].getRotate());
+
+            if(flags[3] == 1){
+                printf("sell %d\n", robotId);
+                flags[3] = 0;
+            }
+
+            if(flags[4] == 1){
+                printf("buy %d\n", robotId);
+                flags[4] = 0;
+            }
+            // printf("destory %d\n", robotId); 暂时不涉及销毁物品
         }
         printf("OK\n", frameID);
         fflush(stdout);

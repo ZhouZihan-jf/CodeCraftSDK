@@ -2,6 +2,7 @@
 // Created by 10259 on 2023/3/19.
 //
 #include <iostream>
+#include <vector>
 #include "../Object/Robot.h"
 #include "../Object/Workshop.h"
 using namespace std;
@@ -9,6 +10,8 @@ using namespace std;
 
 bool initialization(Robot robots[], Workshop workshops[]){
     char line[1024];
+    vector<int> vec;
+
     while(fgets(line, sizeof line, stdin)){
         if (line[0] == 'O' && line[1] == 'K') {
             return true;
@@ -34,9 +37,47 @@ bool initialization(Robot robots[], Workshop workshops[]){
                 i++;
             }
             if(s >= '1' && s <= '9'){  // 遇到台子了
+                int x = s - '0';
                 Position position = Position(m, n);
-                Workshop workshop = Workshop(s-'0', position);
-                workshops[s - '0'] = workshop;
+
+                if(x == 4){
+                    vec.push_back(1);
+                    vec.push_back(2);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                } else if(x == 5){
+                    vec.push_back(1);
+                    vec.push_back(3);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                } else if(x == 6){
+                    vec.push_back(2);
+                    vec.push_back(3);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                } else if(x ==7){
+                    vec.push_back(4);
+                    vec.push_back(5);
+                    vec.push_back(6);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                } else if(x == 8){
+                    vec.push_back(7);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                } else if(x == 9){
+                    vec.push_back(1);
+                    vec.push_back(2);
+                    vec.push_back(3);
+                    vec.push_back(4);
+                    vec.push_back(5);
+                    vec.push_back(6);
+                    vec.push_back(7);
+                    Workshop workshop = Workshop(x, position, vec);
+                    workshops[x] = workshop;
+                }
+
+                vec.clear();
             }
         }
     }

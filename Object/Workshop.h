@@ -14,12 +14,17 @@ class Workshop {
     int workType;  // 工作台类型
     Position position;  // 所处的位置
     int leftProduceTime;  // 剩余生产时间
-    vector<int> materialNum; // 对materialState解析
+    vector<int> materialNum; // 已有原材料类型
+    vector<int> needMaterialNum; // 需要原材料类型
     int productState;  // 产品格状态，只有0和1
     int number;  // 工作台自身编号
 public:
     Workshop();
-    Workshop(int workType, const Position &position);
+    Workshop(int workType, const Position &position, const vector<int> &needMaterialNum);
+
+    const vector<int> &getNeedMaterialNum() const;
+
+    void setNeedMaterialNum(const vector<int> &needMaterialNum);
 
     int getWorkType() const;
     void setWorkType(int workType);

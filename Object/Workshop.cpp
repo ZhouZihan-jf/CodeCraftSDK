@@ -52,12 +52,18 @@ void Workshop::setMaterialNum(const vector<int> &materialNum) {
     Workshop::materialNum = materialNum;
 }
 
-Workshop::Workshop(int workType, const Position &position) {
+Workshop::Workshop(int workType, const Position &position, const vector<int> &needMaterialNum){
     Workshop::workType = workType;
     Workshop::position = position;
-
+    Workshop::needMaterialNum = needMaterialNum;
 }
 
+Workshop::Workshop(){}
 
-Workshop::Workshop(){};
+const vector<int> &Workshop::getNeedMaterialNum() const {
+    return needMaterialNum;
+}
+void Workshop::setNeedMaterialNum(const vector<int> &needMaterialNum) {
+    Workshop::needMaterialNum = needMaterialNum;
+};
 
