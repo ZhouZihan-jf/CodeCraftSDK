@@ -2,12 +2,12 @@
 // Created by 10259 on 2023/3/19.
 //
 #include <iostream>
-#include<stdlib.h>
+#include<cstdlib>
 #include<vector>
 #include <cstring>
 #include "../Object/Robot.h"
 #include "../Object/Workshop.h"
-using namespace std;
+
 
 // 根据materialState的值，将其转化为二进制，然后将二进制中的1的位置记录下来，即为materialNum的值
 // 例如：materialState = 5，即101，那么materialNum = {0, 2}
@@ -45,9 +45,9 @@ bool readUntilOK(Robot robots[], Workshop workshops[], int &reward){
         vector<double> vec;
         string str = line;  // 读取这一行
         char*p = strtok(line, " ");  // 以空格为分隔符，分割字符串
-        while(p != NULL){
+        while(p != nullptr){
             vec.push_back(atof(p));  // 将分割后的字符串转化为double类型
-            p = strtok(NULL, " ");
+            p = strtok(nullptr, " ");
         }
 
         // 根据读取的信息，将其存入相应的对象中

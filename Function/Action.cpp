@@ -8,7 +8,6 @@
 #include "../Object/Robot.h"
 #include "../Object/Workshop.h"
 #include "../Object/Position.h"
-using namespace std;
 
 
 // 计算距离
@@ -17,7 +16,7 @@ double distance(Position p1, Position p2){
 }
 
 // 机器人判断当前位置是否处于工作台附近
-bool isNearWorkshop(Robot robot, Workshop workshop){
+bool isNearWorkshop(Robot robot, const Workshop& workshop){
     Position robotPosition = robot.getPosition();
     Position workshopPosition = workshop.getPosition();
     double distanceToWorkshop = distance(robotPosition, workshopPosition);
@@ -29,13 +28,13 @@ bool isNearWorkshop(Robot robot, Workshop workshop){
 }
 
 // 判断当前工作台缺哪些原材料
-vector<int> getMaterialNum(Workshop workshop){
+vector<int> getMaterialNum(const Workshop& workshop){
     vector<int> materialNum = workshop.getMaterialNum();
     vector<int> needMaterialNum = workshop.getNeedMaterialNum();
     vector<int> num;
-    for(int i = 0; i < materialNum.size(); i++){
-        if(find(needMaterialNum.begin(), needMaterialNum.end(), materialNum[i]) != needMaterialNum.end()){
-            needMaterialNum.erase(find(needMaterialNum.begin(), needMaterialNum.end(), materialNum[i]));
+    for(int & i : materialNum){
+        if(find(needMaterialNum.begin(), needMaterialNum.end(), i) != needMaterialNum.end()){
+            needMaterialNum.erase(find(needMaterialNum.begin(), needMaterialNum.end(), i));
         }
     }
 

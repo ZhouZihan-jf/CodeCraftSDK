@@ -5,7 +5,7 @@
 #include <vector>
 #include "../Object/Robot.h"
 #include "../Object/Workshop.h"
-using namespace std;
+
 
 
 bool initialization(Robot robots[], Workshop workshops[]){
@@ -81,5 +81,6 @@ bool initialization(Robot robots[], Workshop workshops[]){
             }
         }
     }
+    return false;
 }
 
