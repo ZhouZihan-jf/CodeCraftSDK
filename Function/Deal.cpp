@@ -45,8 +45,6 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
     while (fgets(line, sizeof line, stdin)) {
         if (line[0] == 'O' && line[1] == 'K') {
             workshopCount = workshopNum;
-            vec.~vector();
-            materialNum.~vector();
             return true;
         }
 
@@ -58,10 +56,10 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
 
         // 根据读取的信息，将其存入相应的对象中
         if(vec.size() == 10){  // 说明是机器人的信息
-            if(robotNum >= 3){
+            if(robotNum > 3){
                 return false;
             }
-            int workshopId = int(vec[0]);
+            int workshopID = int(vec[0]);
             int itemType = int(vec[1]);
             double timeWorth = vec[2];
             double collisionWorth = vec[3];
@@ -70,7 +68,7 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
             double toward = vec[7];
             Position position = Position(vec[8], vec[9]);
 
-            robots[robotNum].setWorkshopId(workshopId);
+            robots[robotNum].setWorkshopId(workshopID);
             robots[robotNum].setItemType(itemType);
             robots[robotNum].setTimeWorth(timeWorth);
             robots[robotNum].setCollisionWorth(collisionWorth);
@@ -102,8 +100,6 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
             workshop.setProductState(productState);
 
             workshops[workshopId] = workshop;  // 将工作台信息存入数组中
-
-            workshop.~Workshop();
         } else if(vec.size() == 1){
             // 读取工作台总数
             workshopNum = int(vec[0]);
@@ -114,8 +110,6 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
         vec.clear();
     }
 
-    vec.~vector();  // 释放内存
-    materialNum.~vector();  // 释放内存
     return false;
 }
 
@@ -146,8 +140,6 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
             needMaterialNum.erase(find(needMaterialNum.begin(), needMaterialNum.end(), i));
         }
     }
-
-    materialNum.~vector();
 
     return needMaterialNum;
 }
@@ -189,9 +181,6 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
         flags[4] = 1;  // buy
     }
 
-    materialNum.~vector();
-    needMaterialNum.~vector();
-    workshop.~Workshop();
 }
 
 

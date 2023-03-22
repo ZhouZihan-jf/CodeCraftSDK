@@ -84,7 +84,7 @@ void Workshop::setNeedMaterialNum(int workType) {
 
     if(workType <= 3) {
         this->needMaterialNum = {0};
-    }if(workType == 4){
+    }else if(workType == 4){
         vec.push_back(1);
         vec.push_back(2);
         this->needMaterialNum = vec;
@@ -115,7 +115,6 @@ void Workshop::setNeedMaterialNum(int workType) {
         this->needMaterialNum = vec;
     }
 
-    vec.~vector();
 }
 
 Workshop::~Workshop() = default;
