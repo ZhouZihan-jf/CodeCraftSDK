@@ -78,14 +78,6 @@ Workshop::Workshop(int workType) {
     Workshop::workType = workType;
 }
 
-int Workshop::getWorkshopId() const {
-    return workshopId;
-}
-
-void Workshop::setWorkshopId(int workshopId) {
-    Workshop::workshopId = workshopId;
-}
-
 void Workshop::setNeedMaterialNum(int workType) {
     vector<int> vec;
     vec.reserve(10);
