@@ -72,4 +72,6 @@ Robot::Robot(const Position &position) {
     Robot::position = position;
 }
 
-Robot::Robot(){};
+Robot::Robot(){}
+
+Robot::~Robot() = default;;

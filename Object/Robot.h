@@ -20,6 +20,8 @@ private:
     double toward;  // 朝向
     Position position;  //机器人所处坐标
 public:
+    virtual ~Robot();
+
     Robot();
     Robot(const Position &position);
 

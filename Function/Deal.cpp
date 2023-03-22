@@ -1,91 +1,14 @@
 //
 // Created by 10259 on 2023/3/20.
 //
-
-#include <cstdio>
-#include <string>
-#include <cstring>
+#include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <cstring>
 #include "Deal.h"
 
-bool Deal::initialization(Robot *robots, Workshop *workshops) {
-    char line[1024];
-    vector<int> vec;
-
-    while(fgets(line, sizeof line, stdin)){
-        if (line[0] == 'O' && line[1] == 'K') {
-            return true;
-        }
-
-        int count = 0, i = 0;
-        for(char s : line){
-            count++;
-            // 记录x，y；
-            int x, y;
-            x = count / 100;
-            y = count % 100;
-            auto m = double((x - 1) * 0.5 + 0.25);
-            auto n = double((y - 1) * 0.5 + 0.25);
-
-            if(s == '.'){  // 如果遇到.就跳过
-                continue;
-            }
-            if(s == 'A'){  // 遇到机器人了
-                Position position = Position(m, n);
-                auto robot = Robot(position);
-                robots[i] = robot;
-                i++;
-            }
-            if(s >= '1' && s <= '9'){  // 遇到台子了
-                int x = s - '0';
-                Position position = Position(m, n);
-
-                if(x == 4){
-                    vec.push_back(1);
-                    vec.push_back(2);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                } else if(x == 5){
-                    vec.push_back(1);
-                    vec.push_back(3);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                } else if(x == 6){
-                    vec.push_back(2);
-                    vec.push_back(3);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                } else if(x ==7){
-                    vec.push_back(4);
-                    vec.push_back(5);
-                    vec.push_back(6);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                } else if(x == 8){
-                    vec.push_back(7);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                } else if(x == 9){
-                    vec.push_back(1);
-                    vec.push_back(2);
-                    vec.push_back(3);
-                    vec.push_back(4);
-                    vec.push_back(5);
-                    vec.push_back(6);
-                    vec.push_back(7);
-                    Workshop workshop = Workshop(x, position, vec);
-                    workshops[x] = workshop;
-                }
-
-                vec.clear();
-            }
-        }
-    }
-    return false;
-
-}
-
+// 根据materialState的值，将其转化为二进制，然后将二进制中的1的位置记录下来，即为materialNum的值
+// 例如：materialState = 5，即101，那么materialNum = {0, 2}
 vector<int> Deal::calculateMaterialNum(int materialState) {
     int arr[100], i=0;
 
@@ -97,6 +20,7 @@ vector<int> Deal::calculateMaterialNum(int materialState) {
 
     int count = 0;
     vector<int> materialNum;
+    materialNum.reserve(8);  // 预留5个空间
     for(int j=i; j>=0; j--){
         if(arr[j] == 1){
             materialNum.push_back(count);
@@ -107,19 +31,26 @@ vector<int> Deal::calculateMaterialNum(int materialState) {
     return materialNum;
 }
 
-bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward) {
+// 读取信息，直到读到OK为止
+bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &workshopCount) {
     char line[1024];
     int robotNum = 0;
-    int workshopNum;
+    int workshopNum = 0;
+    int workshopId = 0;
+    vector<double> vec;
+    vector<int> materialNum;
+    vec.reserve(11);  // 预留11个空间
+    materialNum.reserve(8);  // 预留5个空间
 
     while (fgets(line, sizeof line, stdin)) {
         if (line[0] == 'O' && line[1] == 'K') {
+            workshopCount = workshopNum;
+            vec.~vector();
+            materialNum.~vector();
             return true;
         }
 
-        vector<double> vec;
-        string str = line;  // 读取这一行
-        char*p = strtok(line, " ");  // 以空格为分隔符，分割字符串
+        char* p = strtok(line, " ");  // 以空格为分隔符，分割字符串
         while(p != nullptr){
             vec.push_back(atof(p));  // 将分割后的字符串转化为double类型
             p = strtok(nullptr, " ");
@@ -149,38 +80,54 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward) {
             robots[robotNum].setPosition(position);
             robotNum ++;
         } else if(vec.size() == 6){  // 说明是工作台的信息
+            workshopId ++;
+            if(workshopId > workshopNum){
+                return false;
+            }
+
             int workType = vec[0];
             Position position = Position(vec[1], vec[2]);
             int leftProduceTime = int(vec[3]);
             int materialState = vec[4];
-            vector<int> materialNum = calculateMaterialNum(materialState);
+            materialNum.clear();
+            materialNum = calculateMaterialNum(materialState);
             int productState = int(vec[5]);
 
-            workshops[workType].setWorkType(workType);
-            workshops[workType].setPosition(position);
-            workshops[workType].setLeftProduceTime(leftProduceTime);
-            workshops[workType].setMaterialNum(materialNum);
-            workshops[workType].setProductState(productState);
+            Workshop workshop = Workshop();
+            workshop.setWorkType(workType);
+            workshop.setPosition(position);
+            workshop.setLeftProduceTime(leftProduceTime);
+            workshop.setMaterialNum(materialNum);
+            workshop.setNeedMaterialNum(workType);
+            workshop.setProductState(productState);
+
+            workshops[workshopId] = workshop;  // 将工作台信息存入数组中
+
+            workshop.~Workshop();
         } else if(vec.size() == 1){
+            // 读取工作台总数
             workshopNum = int(vec[0]);
-            if (workshopNum != 9){
-                return false;
-            }
         } else if(vec.size() == 2){
             // 从这里可以读到frame
             reward = int(vec[1]);
         }
+        vec.clear();
     }
+
+    vec.~vector();  // 释放内存
+    materialNum.~vector();  // 释放内存
     return false;
 }
 
+// 计算距离
 double Deal::distance(Position p1, Position p2) {
     return sqrt(pow(p1.getX() - p2.getX(), 2) + pow(p1.getY() - p2.getY(), 2));
 }
 
-bool Deal::isNearWorkshop(Robot robot, const Workshop &workshop) {
+// 机器人判断当前位置是否处于工作台附近
+bool Deal::isNearWorkshop(Robot robot, Workshop* workshops, int count) {
     Position robotPosition = robot.getPosition();
-    Position workshopPosition = workshop.getPosition();
+    Position workshopPosition = workshops[count].getPosition();
     double distanceToWorkshop = distance(robotPosition, workshopPosition);
     if(distanceToWorkshop <= 0.4){
         return true;
@@ -189,30 +136,43 @@ bool Deal::isNearWorkshop(Robot robot, const Workshop &workshop) {
     }
 }
 
+// 判断当前工作台缺哪些原材料
 vector<int> Deal::getMaterialNum(const Workshop &workshop) {
     vector<int> materialNum = workshop.getMaterialNum();
     vector<int> needMaterialNum = workshop.getNeedMaterialNum();
-    vector<int> num;
+
     for(int & i : materialNum){
         if(find(needMaterialNum.begin(), needMaterialNum.end(), i) != needMaterialNum.end()){
             needMaterialNum.erase(find(needMaterialNum.begin(), needMaterialNum.end(), i));
         }
     }
 
+    materialNum.~vector();
+
     return needMaterialNum;
 }
 
-void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int *flags) {
+// 机器人与工作台交互
+void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
     int workshopId = robot.getWorkshopId();
-    Workshop workshop = workshops[workshopId]; // 找到对应的工作台
+    Workshop workshop = Workshop();
 
-    //不处于工作台附近就退出
-    if(workshopId == -1 || !isNearWorkshop(robot, workshop)){
-        return;
+    for(int i = 1; i <= workshopCount; i++){
+        //不处于工作台附近就退出
+        if(workshopId == -1 || !isNearWorkshop(robot, workshops, i)){
+            return;
+        }
+        // 找到对应的工作台
+        if(workshops[i].getWorkType() == workshopId && isNearWorkshop(robot, workshops, i)){  // 类型一致同时还正好是离得近的那一个台子
+            workshop = workshops[i];
+            break;
+        }
     }
 
     vector<int> materialNum = workshop.getMaterialNum();  // 获取工作台上的原材料类型
+    materialNum.reserve(8);  // 预留5个空间
     vector<int> needMaterialNum = getMaterialNum(workshop);  // 获取工作台还缺的原材料类型
+    needMaterialNum.reserve(8);  // 预留10个空间
 
     // 机器人携带物品类型不为0，即携带有原材料，同时工作台还缺对应的原材料，那么要找台子放原材料，即卖出
     if(find(needMaterialNum.begin(), needMaterialNum.end(), robot.getItemType()) != needMaterialNum.end() && robot.getItemType() != 0){
@@ -228,4 +188,10 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int *flags) {
         workshop.setProductState(0);  // 设置工作台上的产品状态为0，即无产品
         flags[4] = 1;  // buy
     }
+
+    materialNum.~vector();
+    needMaterialNum.~vector();
+    workshop.~Workshop();
 }
+
+

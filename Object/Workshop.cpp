@@ -63,7 +63,69 @@ Workshop::Workshop(){}
 const vector<int> &Workshop::getNeedMaterialNum() const {
     return needMaterialNum;
 }
-void Workshop::setNeedMaterialNum(const vector<int> &needMaterialNum) {
+
+Workshop::Workshop(int workType, const vector<int> &needMaterialNum) {
+    Workshop::workType = workType;
     Workshop::needMaterialNum = needMaterialNum;
-};
+}
+
+Workshop::Workshop(int workType, const Position &position) {
+    Workshop::workType = workType;
+    Workshop::position = position;
+}
+
+Workshop::Workshop(int workType) {
+    Workshop::workType = workType;
+}
+
+int Workshop::getWorkshopId() const {
+    return workshopId;
+}
+
+void Workshop::setWorkshopId(int workshopId) {
+    Workshop::workshopId = workshopId;
+}
+
+void Workshop::setNeedMaterialNum(int workType) {
+    vector<int> vec;
+    vec.reserve(10);
+
+    if(workType <= 3) {
+        this->needMaterialNum = {0};
+    }if(workType == 4){
+        vec.push_back(1);
+        vec.push_back(2);
+        this->needMaterialNum = vec;
+    } else if(workType == 5){
+        vec.push_back(1);
+        vec.push_back(3);
+        this->needMaterialNum = vec;
+    } else if(workType == 6){
+        vec.push_back(2);
+        vec.push_back(3);
+        this->needMaterialNum = vec;
+    } else if(workType ==7){
+        vec.push_back(4);
+        vec.push_back(5);
+        vec.push_back(6);
+        this->needMaterialNum = vec;
+    } else if(workType == 8){
+        vec.push_back(7);
+        this->needMaterialNum = vec;
+    } else if(workType == 9){
+        vec.push_back(1);
+        vec.push_back(2);
+        vec.push_back(3);
+        vec.push_back(4);
+        vec.push_back(5);
+        vec.push_back(6);
+        vec.push_back(7);
+        this->needMaterialNum = vec;
+    }
+
+    vec.~vector();
+}
+
+Workshop::~Workshop() = default;
+
 

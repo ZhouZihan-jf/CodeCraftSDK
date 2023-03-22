@@ -11,6 +11,7 @@
 using namespace std;
 
 class Workshop {
+    int workshopId; // 工作台编号
     int workType;  // 工作台类型
     Position position;  // 所处的位置
     int leftProduceTime;  // 剩余生产时间
@@ -21,10 +22,14 @@ class Workshop {
 public:
     Workshop();
     Workshop(int workType, const Position &position, const vector<int> &needMaterialNum);
+    Workshop(int workType, const vector<int> &needMaterialNum);
+    Workshop(int workType, const Position &position);
+    Workshop(int workType);
+
+    virtual ~Workshop();
 
     const vector<int> &getNeedMaterialNum() const;
-
-    void setNeedMaterialNum(const vector<int> &needMaterialNum);
+    void setNeedMaterialNum(int workType);
 
     int getWorkType() const;
     void setWorkType(int workType);
@@ -43,6 +48,10 @@ public:
 
     const vector<int> &getMaterialNum() const;
     void setMaterialNum(const vector<int> &materialNum);
+
+    int getWorkshopId() const;
+
+    void setWorkshopId(int workshopId);
 };
 
 
