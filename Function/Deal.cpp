@@ -148,6 +148,7 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
     int workshopId = robot.getWorkshopId();
     Workshop workshop = Workshop();
+    int num = 0;
 
     for(int i = 1; i <= workshopCount; i++){
         //不处于工作台附近就退出
@@ -157,6 +158,7 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
         // 找到对应的工作台
         if(workshops[i].getWorkType() == workshopId && isNearWorkshop(robot, workshops, i)){  // 类型一致同时还正好是离得近的那一个台子
             workshop = workshops[i];
+            num = i;
             break;
         }
     }
@@ -181,6 +183,7 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
         flags[4] = 1;  // buy
     }
 
+    workshops[num] = workshop;  // 保留对工作台的修改
 }
 
 
