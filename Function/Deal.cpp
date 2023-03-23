@@ -156,7 +156,7 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
             return;
         }
         // 找到对应的工作台
-        if(workshops[i].getWorkType() == workshopId && isNearWorkshop(robot, workshops, i)){  // 类型一致同时还正好是离得近的那一个台子
+        if(i == workshopId && isNearWorkshop(robot, workshops, i)){  // 类型一致同时还正好是离得近的那一个台子
             workshop = workshops[i];
             num = i;
             break;
@@ -178,7 +178,7 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
 
     // 机器人携带物品类型为0，即空手，同时工作台也生产好了，那么要找台子拿产品，即买入
     if(robot.getItemType() == 0 && workshop.getProductState() == 1){
-        robot.setItemType(workshopId);  // 机器人携带物品类型为工作台上的产品类型
+        robot.setItemType(workshop.getWorkType());  // 机器人携带物品类型为工作台上的产品类型
         workshop.setProductState(0);  // 设置工作台上的产品状态为0，即无产品
         flags[4] = 1;  // buy
     }
