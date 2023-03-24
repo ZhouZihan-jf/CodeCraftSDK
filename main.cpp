@@ -39,8 +39,8 @@ int main() {
 
             workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
             if(workshopVector.empty()){
-                printf("forward %d %f\n", robotId, 4.5);
-                printf("rotate %d %f\n", robotId, 1.0);
+                printf("forward %d %f\n", robotId, 2.5);
+                printf("rotate %d %f\n", robotId, 1.5);
                 if(flags[0] == 1){
                     printf("sell %d\n", robotId);
                     flags[0] = 0;

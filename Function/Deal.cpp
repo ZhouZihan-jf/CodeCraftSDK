@@ -120,15 +120,18 @@ double Deal::distance(Position p1, Position p2) {
 }
 
 // 机器人判断当前位置是否处于工作台附近
-bool Deal::isNearWorkshop(Robot robot, Workshop* workshops, int count) {
+int Deal::isNearWorkshop(Robot robot, Workshop* workshops, int workshopCount) {
     Position robotPosition = robot.getPosition();
-    Position workshopPosition = workshops[count].getPosition();
-    double distanceToWorkshop = distance(robotPosition, workshopPosition);
-    if(distanceToWorkshop <= 0.4){
-        return true;
-    } else{
-        return false;
+    Position workshopPosition;
+    for(int i =1 ; i<=workshopCount; i++){
+        workshopPosition = workshops[i].getPosition();
+        double distanceToWorkshop = distance(robotPosition, workshopPosition);
+        if(distanceToWorkshop <= 0.4){
+            return i;
+        }
     }
+
+    return -1;
 }
 
 // 判断当前工作台缺哪些原材料
@@ -149,6 +152,8 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
     int workshopId = robot.getWorkshopId();
     Workshop workshop;
+
+    workshopId = isNearWorkshop(robot, workshops, workshopCount);
 
     if (workshopId == -1 || workshopId > workshopCount){
         return;
@@ -248,42 +253,59 @@ int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
 }
 
 void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
+    Position robotPosition = robot.getPosition();  // 获得机器人的位置
     int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
 
     double speed = robot.getLineSpeed().getModule();  // 获得机器人的线速度
 
-
-    if(rightDirection == 1){  // 顺时针转
-        // 修改角速度
-        robot.setRotate(-2.0);
-        rotateSpeed = -2.0;
-        // 修改线速度
-        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
-            lineSpeed = speed - 0.5;
-        }else{
-            lineSpeed = 3.0;
-        }
-    }else if(rightDirection == -1){  // 逆时针转
-        // 修改角速度
-        robot.setRotate(2.0);
-        rotateSpeed = 2.0;
-        // 修改线速度
-        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
-            lineSpeed = speed - 0.5;
-        }else{
-            lineSpeed = 3.0;
-        }
-    }else{  // 朝向正确
-        // 修改角速度
-        robot.setRotate(0.0);
+    // 如果位置接近边缘，那么就快速掉头
+    if((robotPosition.getX() < 0.5 || robotPosition.getX() > 49.5 || robotPosition.getY() < 0.5 || robotPosition.getY() > 49.5) && robot.getItemType() == 0){
+        robot.setRotate(3.14);  // 以最大角速度转向
+        rotateSpeed = 3.14;
+        lineSpeed = 0.5;
+    }else if((robotPosition.getX() < 0.7 || robotPosition.getX() > 48.8 || robotPosition.getY() < 0.7 || robotPosition.getY() > 48.8) && robot.getItemType() != 0) {
+        robot.setRotate(3.14);  // 以最大角速度转向
+        rotateSpeed = 3.14;
+        lineSpeed = 1.0;
+    }else if(distance(robotPosition, workshop.getPosition()) <= 0.1) {  // 机器人已经到达交互范围中
+        robot.setRotate(0.0);  // 停止转动
         rotateSpeed = 0.0;
-        // 修改线速度
-        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
-            lineSpeed = speed;
-        }else{
-            lineSpeed = speed + 0.5;
+        lineSpeed = 0.0;
+    }else{
+        if(rightDirection == 1){  // 顺时针转
+            // 修改角速度
+            robot.setRotate(-2.0);
+            rotateSpeed = -2.0;
+            // 修改线速度
+            if(speed > 3.0){ // 如果基础速度大于4，那么就减速
+                lineSpeed = speed - 0.5;
+            }else{
+                lineSpeed = 2.0;
+            }
+        }else if(rightDirection == -1){  // 逆时针转
+            // 修改角速度
+            robot.setRotate(2.0);
+            rotateSpeed = 2.0;
+            // 修改线速度
+            if(speed > 3.0){ // 如果基础速度大于4，那么就减速
+                lineSpeed = speed - 0.5;
+            }else{
+                lineSpeed = 2.0;
+            }
+        }else{  // 朝向正确
+            // 修改角速度
+            robot.setRotate(0.0);
+            rotateSpeed = 0.0;
+            // 修改线速度
+            if(speed > 4.0){ // 如果基础速度大于4，那么就减速
+                lineSpeed = speed;
+            }else{
+                lineSpeed = speed + 0.5;
+            }
         }
     }
+
+
 }
 
 

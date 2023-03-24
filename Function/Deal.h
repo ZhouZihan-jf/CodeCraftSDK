@@ -14,7 +14,7 @@ public:
     static vector<int> calculateMaterialNum(int materialState);
     static bool readUntilOK(Robot robots[], Workshop workshops[], int &reward, int &workshopCount);
     static double distance(Position p1, Position p2);
-    static bool isNearWorkshop(Robot robot, Workshop workshops[], int count);
+    static int isNearWorkshop(Robot robot, Workshop workshops[], int workshopCount);
     static vector<int> getMaterialNum(const Workshop& workshop);
     static void interactWithWorkshop(Robot &robot, Workshop workshops[], int workshopCount, int flags[]);
     static vector<Workshop> findWorkshops(Robot robot, Workshop workshops[], int workshopCount);
