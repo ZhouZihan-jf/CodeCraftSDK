@@ -21,9 +21,10 @@ vector<int> Deal::calculateMaterialNum(int materialState) {
     int count = 0;
     vector<int> materialNum;
     materialNum.reserve(8);  // 预留5个空间
-    for(int j=i; j>=0; j--){
+    for(int j=0; j<i; j++){
         if(arr[j] == 1){
             materialNum.push_back(count);
+            count ++;
         } else{
             count ++;
         }
@@ -147,43 +148,142 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 // 机器人与工作台交互
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
     int workshopId = robot.getWorkshopId();
-    Workshop workshop = Workshop();
-    int num = 0;
+    Workshop workshop;
 
-    for(int i = 1; i <= workshopCount; i++){
-        //不处于工作台附近就退出
-        if(workshopId == -1 || !isNearWorkshop(robot, workshops, i)){
-            return;
-        }
-        // 找到对应的工作台
-        if(i == workshopId && isNearWorkshop(robot, workshops, i)){  // 类型一致同时还正好是离得近的那一个台子
-            workshop = workshops[i];
-            num = i;
-            break;
-        }
+    if (workshopId == -1 || workshopId > workshopCount){
+        return;
+    }else{
+        workshop = workshops[workshopId];
     }
 
-    vector<int> materialNum = workshop.getMaterialNum();  // 获取工作台上的原材料类型
+    vector<int> materialNum;
     materialNum.reserve(8);  // 预留5个空间
-    vector<int> needMaterialNum = getMaterialNum(workshop);  // 获取工作台还缺的原材料类型
+    materialNum = workshop.getMaterialNum();  // 获取工作台上的原材料类型
+    vector<int> needMaterialNum;
     needMaterialNum.reserve(8);  // 预留10个空间
+    needMaterialNum = getMaterialNum(workshop);  // 获取工作台缺少的原材料类型
 
     // 机器人携带物品类型不为0，即携带有原材料，同时工作台还缺对应的原材料，那么要找台子放原材料，即卖出
     if(find(needMaterialNum.begin(), needMaterialNum.end(), robot.getItemType()) != needMaterialNum.end() && robot.getItemType() != 0){
         materialNum.push_back(robot.getItemType());  // 工作台上的原材料类型为机器人携带的原材料类型
         workshop.setMaterialNum(materialNum);
-        robot.setItemType(0);  // 机器人会卖出携带物品类型为0，即空手
-        flags[3] = 1;  // sell
+        robot.setItemType(0);  // 机器人会卖出携带物品,此时类型为0，即空手
+        flags[0] = 1;  // sell
     }
 
     // 机器人携带物品类型为0，即空手，同时工作台也生产好了，那么要找台子拿产品，即买入
     if(robot.getItemType() == 0 && workshop.getProductState() == 1){
         robot.setItemType(workshop.getWorkType());  // 机器人携带物品类型为工作台上的产品类型
         workshop.setProductState(0);  // 设置工作台上的产品状态为0，即无产品
-        flags[4] = 1;  // buy
+        flags[1] = 1;  // buy
     }
 
-    workshops[num] = workshop;  // 保留对工作台的修改
+    workshops[workshopId] = workshop;  // 保留对工作台的修改
+}
+
+// 机器人发现一定范围内的工作台，返回工作台向量，方便后续寻路
+vector<Workshop> Deal::findWorkshops(Robot robot, Workshop *workshops, int workshopCount) {
+    vector<Workshop> robotFindworkshops;
+    robotFindworkshops.reserve(50);  // 预留50个空间
+
+    int good = robot.getItemType();  // 获取机器人携带物品类型
+    int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
+    vector<int> needMaterialNum;  // 获取工作台还缺的原材料类型
+    needMaterialNum.reserve(8);  // 预留8个空间
+
+    for (int i = 1; i <= workshopCount; i++) {
+        if (i == workshopId) {  // 跳过现在正在交互的工作台
+            continue;
+        }
+        needMaterialNum = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
+        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
+        if (good != 0 && find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()) {
+            robotFindworkshops.push_back(workshops[i]);
+        }
+        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
+        if (good == 0 && workshops[i].getProductState() == 1){
+            robotFindworkshops.push_back(workshops[i]);
+        }
+    }
+
+    // 对robotFindworkshops进行排序，按照距离从近到远
+    sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
+        return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
+    });
+
+    return robotFindworkshops;
+}
+
+int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
+    Position robotPosition = robot.getPosition();
+    Position workshopPosition = workshop.getPosition();
+    Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
+
+    double PI = 3.14159265359;
+    double distA = distance(robotPosition, workshopPosition);
+    double distB = distance(robotPosition, fuzhuPosition);
+    double x1 = workshopPosition.getX() - robotPosition.getX();
+    double y1 = workshopPosition.getY() - robotPosition.getY();
+    double x2 = fuzhuPosition.getX() - robotPosition.getX();
+    double y2 = fuzhuPosition.getY() - robotPosition.getY();
+
+    double cos = (x1*x2 + y1*y2) / (distA*distB);
+    double angle = acos(cos);  // 以robot为原点建立坐标系，返回目的地工作台与水平线的夹角
+
+    double toward = robot.getToward();  // 得到robot的朝向
+    double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
+
+
+    if(tag > 0 && tag < PI){
+        return 1;  // 顺时针转
+    }else if(tag > PI && tag < 2*PI) {
+        return -1;  // 逆时针转
+    }else if(tag > -PI && tag < 0) {
+        return -1;  // 逆时针转
+    }else if(tag > -2*PI && tag < -PI) {
+        return 1;  // 顺时针转
+    }
+
+    return 0;  // 朝向正确
+}
+
+void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
+    int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
+
+    double speed = robot.getLineSpeed().getModule();  // 获得机器人的线速度
+
+
+    if(rightDirection == 1){  // 顺时针转
+        // 修改角速度
+        robot.setRotate(-2.0);
+        rotateSpeed = -2.0;
+        // 修改线速度
+        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
+            lineSpeed = speed - 0.5;
+        }else{
+            lineSpeed = 3.0;
+        }
+    }else if(rightDirection == -1){  // 逆时针转
+        // 修改角速度
+        robot.setRotate(2.0);
+        rotateSpeed = 2.0;
+        // 修改线速度
+        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
+            lineSpeed = speed - 0.5;
+        }else{
+            lineSpeed = 3.0;
+        }
+    }else{  // 朝向正确
+        // 修改角速度
+        robot.setRotate(0.0);
+        rotateSpeed = 0.0;
+        // 修改线速度
+        if(speed > 4.0){ // 如果基础速度大于4，那么就减速
+            lineSpeed = speed;
+        }else{
+            lineSpeed = speed + 0.5;
+        }
+    }
 }
 
 

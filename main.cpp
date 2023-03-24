@@ -21,28 +21,51 @@ int main() {
     puts("OK");//标准输出“ok”并换行
     fflush(stdout);//冲洗流中的信息，缓冲区内的数据写回标准输出的文件中
 
+    vector<Workshop> workshopVector;
+    workshopVector.reserve(51);  // 预留51个空间
+
     int frameID = 0;//帧的id号
+    double lineSpeed = 0.0;
+    double rotate = 0.0;
     while (scanf("%d ", &frameID) != EOF) {//文件读入还没结束时进入循环
         Deal::readUntilOK(robots, workshops, reward, workshopCount);
         printf("%d\n", frameID);
 
-        int flags[6] = {0, 0, 0, 0, 0, 0};  // 设置标记
+        int flags[2] = {0, 0};  // 设置标记
 
         for(int robotId = 0; robotId < 4; robotId++){
+            // 交互
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
-            LineSpeed lineSpeed = robots[robotId].getLineSpeed();
 
-            printf("forward %d %f\n", robotId, lineSpeed.getModule());
-            printf("rotate %d %f\n", robotId, robots[robotId].getRotate());
+            workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
+            if(workshopVector.empty()){
+                printf("forward %d %f\n", robotId, 4.5);
+                printf("rotate %d %f\n", robotId, 1.0);
+                if(flags[0] == 1){
+                    printf("sell %d\n", robotId);
+                    flags[0] = 0;
+                }
 
-            if(flags[3] == 1){
-                printf("sell %d\n", robotId);
-                flags[3] = 0;
+                if(flags[1] == 1){
+                    printf("buy %d\n", robotId);
+                    flags[1] = 0;
+                }
+                continue;  // 如果没有找到工坊，就不用执行下面的代码了
             }
 
-            if(flags[4] == 1){
+            Deal::action(robots[robotId], workshopVector[0], lineSpeed, rotate);
+
+            printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
+            printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()
+
+            if(flags[0] == 1){
+                printf("sell %d\n", robotId);
+                flags[0] = 0;
+            }
+
+            if(flags[1] == 1){
                 printf("buy %d\n", robotId);
-                flags[4] = 0;
+                flags[1] = 0;
             }
             // printf("destory %d\n", robotId); 暂时不涉及销毁物品
         }

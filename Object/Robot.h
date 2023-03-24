@@ -17,7 +17,7 @@ private:
     double collisionWorth;  // 碰撞价值系数
     double rotate;  // 角速度
     LineSpeed lineSpeed;  // 线速度
-    double toward;  // 朝向
+    double toward;  // 朝向，计算该向顺时针旋转还是向逆时针旋转
     Position position;  //机器人所处坐标
 public:
     virtual ~Robot();

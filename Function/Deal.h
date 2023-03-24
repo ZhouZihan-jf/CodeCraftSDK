@@ -17,6 +17,9 @@ public:
     static bool isNearWorkshop(Robot robot, Workshop workshops[], int count);
     static vector<int> getMaterialNum(const Workshop& workshop);
     static void interactWithWorkshop(Robot &robot, Workshop workshops[], int workshopCount, int flags[]);
+    static vector<Workshop> findWorkshops(Robot robot, Workshop workshops[], int workshopCount);
+    static int isRightDirection(Robot &robot, const Workshop& workshop);
+    static void action(Robot &robot, const Workshop& workshop, double& lineSpeed, double& rotateSpeed);
 };
 
 
