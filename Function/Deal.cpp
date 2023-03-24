@@ -121,6 +121,10 @@ double Deal::distance(Position p1, Position p2) {
 
 // 机器人判断当前位置是否处于工作台附近
 int Deal::isNearWorkshop(Robot robot, Workshop* workshops, int workshopCount) {
+    //int workshopId = robot.getWorkshopId();
+    //if(workshopId != -1){
+    //    return workshopId;
+    //}
     Position robotPosition = robot.getPosition();
     Position workshopPosition;
     for(int i =1 ; i<=workshopCount; i++){
@@ -150,7 +154,7 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 
 // 机器人与工作台交互
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
-    int workshopId = robot.getWorkshopId();
+    int workshopId;
     Workshop workshop;
 
     workshopId = isNearWorkshop(robot, workshops, workshopCount);
@@ -225,6 +229,11 @@ int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
     Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
 
     double PI = 3.14159265359;
+    double toward = robot.getToward();  // 得到robot的朝向
+    if(toward < 0){
+        toward  = PI - toward;
+    }
+    // 计算目标向量与x轴正方向的夹角
     double distA = distance(robotPosition, workshopPosition);
     double distB = distance(robotPosition, fuzhuPosition);
     double x1 = workshopPosition.getX() - robotPosition.getX();
@@ -235,7 +244,10 @@ int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
     double cos = (x1*x2 + y1*y2) / (distA*distB);
     double angle = acos(cos);  // 以robot为原点建立坐标系，返回目的地工作台与水平线的夹角
 
-    double toward = robot.getToward();  // 得到robot的朝向
+    if(x1*y2 - x2*y1 > 0){
+        angle = 2*PI - angle;
+    }
+
     double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
 
 
@@ -256,18 +268,16 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
     Position robotPosition = robot.getPosition();  // 获得机器人的位置
     int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
 
-    double speed = robot.getLineSpeed().getModule();  // 获得机器人的线速度
-
     // 如果位置接近边缘，那么就快速掉头
-    if((robotPosition.getX() < 0.5 || robotPosition.getX() > 49.5 || robotPosition.getY() < 0.5 || robotPosition.getY() > 49.5) && robot.getItemType() == 0){
-        robot.setRotate(3.14);  // 以最大角速度转向
-        rotateSpeed = 3.14;
-        lineSpeed = 0.5;
-    }else if((robotPosition.getX() < 0.7 || robotPosition.getX() > 48.8 || robotPosition.getY() < 0.7 || robotPosition.getY() > 48.8) && robot.getItemType() != 0) {
+    if((robotPosition.getX() < 0.65 || robotPosition.getX() > 49.35 || robotPosition.getY() < 0.65 || robotPosition.getY() > 49.35) && robot.getItemType() == 0){
         robot.setRotate(3.14);  // 以最大角速度转向
         rotateSpeed = 3.14;
         lineSpeed = 1.0;
-    }else if(distance(robotPosition, workshop.getPosition()) <= 0.1) {  // 机器人已经到达交互范围中
+    }else if((robotPosition.getX() < 0.85 || robotPosition.getX() > 49.15 || robotPosition.getY() < 0.85 || robotPosition.getY() > 49.15) && robot.getItemType() != 0) {
+        robot.setRotate(3.14);  // 以最大角速度转向
+        rotateSpeed = 3.14;
+        lineSpeed = 1.0;
+    }else if(distance(robotPosition, workshop.getPosition()) <= 0.4) {  // 机器人已经到达交互范围中
         robot.setRotate(0.0);  // 停止转动
         rotateSpeed = 0.0;
         lineSpeed = 0.0;
@@ -277,35 +287,21 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
             robot.setRotate(-2.0);
             rotateSpeed = -2.0;
             // 修改线速度
-            if(speed > 3.0){ // 如果基础速度大于4，那么就减速
-                lineSpeed = speed - 0.5;
-            }else{
-                lineSpeed = 2.0;
-            }
+            lineSpeed = 5.0;
         }else if(rightDirection == -1){  // 逆时针转
             // 修改角速度
-            robot.setRotate(2.0);
-            rotateSpeed = 2.0;
+            robot.setRotate(3.14);
+            rotateSpeed = 3.14;
             // 修改线速度
-            if(speed > 3.0){ // 如果基础速度大于4，那么就减速
-                lineSpeed = speed - 0.5;
-            }else{
-                lineSpeed = 2.0;
-            }
+            lineSpeed = 5.0;
         }else{  // 朝向正确
             // 修改角速度
             robot.setRotate(0.0);
             rotateSpeed = 0.0;
             // 修改线速度
-            if(speed > 4.0){ // 如果基础速度大于4，那么就减速
-                lineSpeed = speed;
-            }else{
-                lineSpeed = speed + 0.5;
-            }
+            lineSpeed = 5.0;
         }
     }
-
-
 }
 
 

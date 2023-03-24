@@ -1,7 +1,7 @@
 #include <iostream>
+#include <ctime>
 #include "Object/Workshop.h"
 #include "Object/Robot.h"
-#include "Object/LineSpeed.h"
 #include "Function/Deal.h"
 using namespace std;
 
@@ -13,6 +13,8 @@ int main() {
     //  机器人是固定的，所以只需要初始化一次
     for(int i = 0; i < 4; i++){
         robots[i] = Robot();
+        // double t = -3.14 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.28)));
+        // robots[i].setToward(t);
     }
 
     int reward;  //奖励
@@ -38,22 +40,11 @@ int main() {
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
 
             workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
-            if(workshopVector.empty()){
-                printf("forward %d %f\n", robotId, 2.5);
-                printf("rotate %d %f\n", robotId, 1.5);
-                if(flags[0] == 1){
-                    printf("sell %d\n", robotId);
-                    flags[0] = 0;
-                }
+            printf("workshopVector.size() = %d\n", workshopVector.size());
 
-                if(flags[1] == 1){
-                    printf("buy %d\n", robotId);
-                    flags[1] = 0;
-                }
-                continue;  // 如果没有找到工坊，就不用执行下面的代码了
-            }
-
-            Deal::action(robots[robotId], workshopVector[0], lineSpeed, rotate);
+            //srand((int)time(0));  // 随机数种子
+            //int index = rand() % workshopVector.size();  // 随机选择一个工坊
+            Deal::action(robots[robotId], workshopVector[1], lineSpeed, rotate);
 
             printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
             printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()
