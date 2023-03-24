@@ -93,6 +93,7 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
             int productState = int(vec[5]);
 
             Workshop workshop = Workshop();
+            workshop.setNumber(workshopId);
             workshop.setWorkType(workType);
             workshop.setPosition(position);
             workshop.setLeftProduceTime(leftProduceTime);
@@ -154,7 +155,7 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 
 // 机器人与工作台交互
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
-    int workshopId;
+    int workshopId = robot.getWorkshopId();
     Workshop workshop;
 
     workshopId = isNearWorkshop(robot, workshops, workshopCount);
@@ -223,7 +224,7 @@ vector<Workshop> Deal::findWorkshops(Robot robot, Workshop *workshops, int works
     return robotFindworkshops;
 }
 
-int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
+int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
     Position robotPosition = robot.getPosition();
     Position workshopPosition = workshop.getPosition();
     Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
@@ -235,29 +236,30 @@ int Deal::isRightDirection(Robot &robot, const Workshop& workshop) {
     }
     // 计算目标向量与x轴正方向的夹角
     double distA = distance(robotPosition, workshopPosition);
-    double distB = distance(robotPosition, fuzhuPosition);
     double x1 = workshopPosition.getX() - robotPosition.getX();
     double y1 = workshopPosition.getY() - robotPosition.getY();
     double x2 = fuzhuPosition.getX() - robotPosition.getX();
     double y2 = fuzhuPosition.getY() - robotPosition.getY();
 
-    double cos = (x1*x2 + y1*y2) / (distA*distB);
+    double cos = x1 / distA;
     double angle = acos(cos);  // 以robot为原点建立坐标系，返回目的地工作台与水平线的夹角
 
-    if(x1*y2 - x2*y1 > 0){
-        angle = 2*PI - angle;
+
+    if(y1 < 0){
+        angle = - angle;
     }
+
 
     double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
 
 
     if(tag > 0 && tag < PI){
         return 1;  // 顺时针转
-    }else if(tag > PI && tag < 2*PI) {
+    }else if(tag > PI && tag < 2*PI + 1) {
         return -1;  // 逆时针转
     }else if(tag > -PI && tag < 0) {
         return -1;  // 逆时针转
-    }else if(tag > -2*PI && tag < -PI) {
+    }else if(tag > -2*PI - 1 && tag < -PI) {
         return 1;  // 顺时针转
     }
 
@@ -284,14 +286,14 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
     }else{
         if(rightDirection == 1){  // 顺时针转
             // 修改角速度
-            robot.setRotate(-2.0);
-            rotateSpeed = -2.0;
+            robot.setRotate(-0.5);
+            rotateSpeed = -0.5;
             // 修改线速度
             lineSpeed = 5.0;
         }else if(rightDirection == -1){  // 逆时针转
             // 修改角速度
-            robot.setRotate(3.14);
-            rotateSpeed = 3.14;
+            robot.setRotate(0.5);
+            rotateSpeed = 0.5;
             // 修改线速度
             lineSpeed = 5.0;
         }else{  // 朝向正确

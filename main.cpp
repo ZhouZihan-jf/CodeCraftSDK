@@ -13,8 +13,6 @@ int main() {
     //  机器人是固定的，所以只需要初始化一次
     for(int i = 0; i < 4; i++){
         robots[i] = Robot();
-        // double t = -3.14 + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.28)));
-        // robots[i].setToward(t);
     }
 
     int reward;  //奖励
@@ -40,11 +38,8 @@ int main() {
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
 
             workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
-            printf("workshopVector.size() = %d\n", workshopVector.size());
 
-            //srand((int)time(0));  // 随机数种子
-            //int index = rand() % workshopVector.size();  // 随机选择一个工坊
-            Deal::action(robots[robotId], workshopVector[1], lineSpeed, rotate);
+            Deal::action(robots[robotId], workshopVector[0], lineSpeed, rotate);
 
             printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
             printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()
@@ -59,6 +54,8 @@ int main() {
                 flags[1] = 0;
             }
             // printf("destory %d\n", robotId); 暂时不涉及销毁物品
+
+            workshopVector.clear();
         }
         printf("OK\n");
         fflush(stdout);
