@@ -37,16 +37,14 @@ int main() {
             // 交互
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
 
-            /*
             if(frameID <= 50){
                 workshopVector = Deal::initFindWorkshops(robots[robotId], workshops, workshopCount);
             } else{
                 workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
             }
-            */
-            Workshop w = Deal::findTargetWorkshop(robots[robotId], workshops, workshopCount);
+            //Workshop w = Deal::findTargetWorkshop(robots[robotId], workshops, workshopCount);
 
-            Deal::action(robots[robotId], w, lineSpeed, rotate);
+            Deal::action(robots[robotId], robots, workshopVector[0], lineSpeed, rotate);
 
             printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
             printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()

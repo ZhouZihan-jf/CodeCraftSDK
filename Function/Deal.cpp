@@ -215,20 +215,21 @@ int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
     double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
 
 
-    if(tag > 0.022 && tag < PI - 0.022){
+    if(tag > 0.023 && tag < PI - 0.023){
         return 1;  // 顺时针转
-    }else if(tag > PI + 0.022 && tag < 2*PI - 0.022) {
+    }else if(tag > PI + 0.023 && tag < 2*PI - 0.023) {
         return -1;  // 逆时针转
-    }else if(tag > -PI + 0.022 && tag < 0 - 0.022) {
+    }else if(tag > -PI + 0.023 && tag < 0 - 0.023) {
         return -1;  // 逆时针转
-    }else if(tag > -2*PI + 0.022 && tag < -PI - 0.022) {
+    }else if(tag > -2*PI + 0.023 && tag < -PI - 0.023) {
         return 1;  // 顺时针转
     }
 
     return 0;  // 朝向正确
 }
 
-void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
+void Deal::action(Robot &robot, const Robot robots[], const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
+    double PI = 3.14159265359;
     Position robotPosition = robot.getPosition();  // 获得机器人的位置
     int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
 
@@ -236,8 +237,8 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
         // 机器人到达交互范围中，但是工作台在边界
         if(workshop.getPosition().getX() < 0.3 || workshop.getPosition().getX() > 49.7
         || workshop.getPosition().getY() < 0.3 || workshop.getPosition().getY() > 49.7){
-            robot.setRotate(3.14);
-            rotateSpeed = 3.14;
+            robot.setRotate(3.0);
+            rotateSpeed = 3.0;
         }else{
             robot.setRotate(0.0);
             rotateSpeed = 0.0;
@@ -249,13 +250,13 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
             robot.setRotate(-3.0);
             rotateSpeed = -3.0;
             // 修改线速度
-            lineSpeed = 3.0;
+            lineSpeed = 3.5;
         }else if(rightDirection == -1){  // 逆时针转
             // 修改角速度
             robot.setRotate(3.0);
             rotateSpeed = 3.0;
             // 修改线速度
-            lineSpeed = 3.0;
+            lineSpeed = 3.5;
         }else{  // 朝向正确
             // 修改角速度
             robot.setRotate(0.0);
@@ -263,6 +264,33 @@ void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, dou
             // 修改线速度
             lineSpeed = 6.0;
         }
+    }
+
+    // 解决机器人之间碰撞问题
+    for(int i = 0; i < 4; i++){
+        // 跳过当前机器人
+        if(robot.getPosition().getX() == robots[i].getPosition().getX()
+        && robot.getPosition().getY() == robots[i].getPosition().getY()){
+            continue;
+        }
+        // 相向碰撞
+        if((abs(robot.getToward() - robots[i].getToward()) >= 0.8*PI && abs(robot.getToward() - robots[i].getToward()) <= PI)
+        && distance(robot.getPosition(), robots[i].getPosition()) <= 1.0){
+            robot.setRotate(2.0);
+            rotateSpeed = 2.0;
+            lineSpeed = 1.0;
+        }
+        /*
+        // 同向碰撞
+        if((abs(robot.getToward() - robots[i].getToward()) >= 0 && abs(robot.getToward() - robots[i].getToward()) <= 0.2*PI)
+           && distance(robot.getPosition(), robots[i].getPosition()) <= 1.0){
+            // 修改角速度
+            robot.setRotate(.0);
+            rotateSpeed = 0.0;
+            // 修改线速度
+            lineSpeed = 2.0;
+        }
+         */
     }
 }
 
@@ -334,7 +362,7 @@ vector<Workshop> Deal::initFindWorkshops(Robot robot, Workshop *workshops, int w
     return robotFindworkshops;
 }
 
-double G(Workshop workshop, Robot robot){
+double G(const Workshop& workshop, const Robot& robot){
     double reward = 0.0;
     if(workshop.getWorkType() == 1){
         reward = 3000.0;
@@ -379,12 +407,12 @@ Workshop Deal::findTargetWorkshop(Robot robot, Workshop *workshops, int workshop
         }
         // 如果机器人没带东西，那么就加入所有生产了东西的工作台
         if (good == 0 && workshops[i].getProductState() == 1){
-            if(G(workshops[i], robot) < 0){
+            if(G(workshops[i], robot) < 0){  // 判断是否有利可图
                 continue;
             }
             int product = workshops[i].getWorkType();  // 获取工作台生产的东西
             // 已经生产的product能不能卖掉
-            for(int j = 1; i <= workshopCount; i++) {  // 找到能卖的序列
+            for(int j = 1; j <= workshopCount; j++) {  // 找到能卖的序列
                 if(j == workshopId){  // 跳过现在正在交互的工作台
                     continue;
                 }
