@@ -155,7 +155,7 @@ vector<int> Deal::getMaterialNum(const Workshop &workshop) {
 
 // 机器人与工作台交互
 void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopCount, int *flags) {
-    int workshopId = robot.getWorkshopId();
+    int workshopId;
     Workshop workshop;
 
     workshopId = isNearWorkshop(robot, workshops, workshopCount);
@@ -191,6 +191,81 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
     workshops[workshopId] = workshop;  // 保留对工作台的修改
 }
 
+int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
+    Position robotPosition = robot.getPosition();
+    Position workshopPosition = workshop.getPosition();
+    Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
+
+    double PI = 3.14159265359;
+    double toward = robot.getToward();  // 得到robot的朝向
+    // 计算目标向量与x轴正方向的夹角
+    double distA = distance(robotPosition, workshopPosition);
+    double x1 = workshopPosition.getX() - robotPosition.getX();
+    double y1 = workshopPosition.getY() - robotPosition.getY();
+
+    double cos = x1 / distA;
+    double angle = acos(cos);  // 以robot为原点建立坐标系，返回目的地工作台与水平线的夹角
+
+
+    if(y1 < 0){
+        angle = - angle;
+    }
+
+
+    double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
+
+
+    if(tag > 0.022 && tag < PI - 0.022){
+        return 1;  // 顺时针转
+    }else if(tag > PI + 0.022 && tag < 2*PI - 0.022) {
+        return -1;  // 逆时针转
+    }else if(tag > -PI + 0.022 && tag < 0 - 0.022) {
+        return -1;  // 逆时针转
+    }else if(tag > -2*PI + 0.022 && tag < -PI - 0.022) {
+        return 1;  // 顺时针转
+    }
+
+    return 0;  // 朝向正确
+}
+
+void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
+    Position robotPosition = robot.getPosition();  // 获得机器人的位置
+    int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
+
+    if(distance(robotPosition, workshop.getPosition()) <= 0.4) {  // 机器人已经到达交互范围中
+        // 机器人到达交互范围中，但是工作台在边界
+        if(workshop.getPosition().getX() < 0.3 || workshop.getPosition().getX() > 49.7
+        || workshop.getPosition().getY() < 0.3 || workshop.getPosition().getY() > 49.7){
+            robot.setRotate(3.14);
+            rotateSpeed = 3.14;
+        }else{
+            robot.setRotate(0.0);
+            rotateSpeed = 0.0;
+        }
+        lineSpeed = 0.0;
+    }else{
+        if(rightDirection == 1){  // 顺时针转
+            // 修改角速度
+            robot.setRotate(-3.0);
+            rotateSpeed = -3.0;
+            // 修改线速度
+            lineSpeed = 3.0;
+        }else if(rightDirection == -1){  // 逆时针转
+            // 修改角速度
+            robot.setRotate(3.0);
+            rotateSpeed = 3.0;
+            // 修改线速度
+            lineSpeed = 3.0;
+        }else{  // 朝向正确
+            // 修改角速度
+            robot.setRotate(0.0);
+            rotateSpeed = 0.0;
+            // 修改线速度
+            lineSpeed = 6.0;
+        }
+    }
+}
+
 // 机器人发现一定范围内的工作台，返回工作台向量，方便后续寻路
 vector<Workshop> Deal::findWorkshops(Robot robot, Workshop *workshops, int workshopCount) {
     vector<Workshop> robotFindworkshops;
@@ -224,86 +299,115 @@ vector<Workshop> Deal::findWorkshops(Robot robot, Workshop *workshops, int works
     return robotFindworkshops;
 }
 
-int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
-    Position robotPosition = robot.getPosition();
-    Position workshopPosition = workshop.getPosition();
-    Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
+vector<Workshop> Deal::initFindWorkshops(Robot robot, Workshop *workshops, int workshopCount) {
+    vector<Workshop> robotFindworkshops;
+    robotFindworkshops.reserve(50);  // 预留50个空间
 
-    double PI = 3.14159265359;
-    double toward = robot.getToward();  // 得到robot的朝向
-    if(toward < 0){
-        toward  = PI - toward;
-    }
-    // 计算目标向量与x轴正方向的夹角
-    double distA = distance(robotPosition, workshopPosition);
-    double x1 = workshopPosition.getX() - robotPosition.getX();
-    double y1 = workshopPosition.getY() - robotPosition.getY();
-    double x2 = fuzhuPosition.getX() - robotPosition.getX();
-    double y2 = fuzhuPosition.getY() - robotPosition.getY();
+    int good = robot.getItemType();  // 获取机器人携带物品类型
+    int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
+    vector<int> needMaterialNum;  // 获取工作台还缺的原材料类型
+    needMaterialNum.reserve(8);  // 预留8个空间
 
-    double cos = x1 / distA;
-    double angle = acos(cos);  // 以robot为原点建立坐标系，返回目的地工作台与水平线的夹角
-
-
-    if(y1 < 0){
-        angle = - angle;
-    }
-
-
-    double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
-
-
-    if(tag > 0 && tag < PI){
-        return 1;  // 顺时针转
-    }else if(tag > PI && tag < 2*PI + 1) {
-        return -1;  // 逆时针转
-    }else if(tag > -PI && tag < 0) {
-        return -1;  // 逆时针转
-    }else if(tag > -2*PI - 1 && tag < -PI) {
-        return 1;  // 顺时针转
-    }
-
-    return 0;  // 朝向正确
-}
-
-void Deal::action(Robot &robot, const Workshop &workshop, double& lineSpeed, double& rotateSpeed){
-    Position robotPosition = robot.getPosition();  // 获得机器人的位置
-    int rightDirection = isRightDirection(robot, workshop);  // 判断机器人朝向是否正确
-
-    // 如果位置接近边缘，那么就快速掉头
-    if((robotPosition.getX() < 0.65 || robotPosition.getX() > 49.35 || robotPosition.getY() < 0.65 || robotPosition.getY() > 49.35) && robot.getItemType() == 0){
-        robot.setRotate(3.14);  // 以最大角速度转向
-        rotateSpeed = 3.14;
-        lineSpeed = 1.0;
-    }else if((robotPosition.getX() < 0.85 || robotPosition.getX() > 49.15 || robotPosition.getY() < 0.85 || robotPosition.getY() > 49.15) && robot.getItemType() != 0) {
-        robot.setRotate(3.14);  // 以最大角速度转向
-        rotateSpeed = 3.14;
-        lineSpeed = 1.0;
-    }else if(distance(robotPosition, workshop.getPosition()) <= 0.4) {  // 机器人已经到达交互范围中
-        robot.setRotate(0.0);  // 停止转动
-        rotateSpeed = 0.0;
-        lineSpeed = 0.0;
-    }else{
-        if(rightDirection == 1){  // 顺时针转
-            // 修改角速度
-            robot.setRotate(-0.5);
-            rotateSpeed = -0.5;
-            // 修改线速度
-            lineSpeed = 5.0;
-        }else if(rightDirection == -1){  // 逆时针转
-            // 修改角速度
-            robot.setRotate(0.5);
-            rotateSpeed = 0.5;
-            // 修改线速度
-            lineSpeed = 5.0;
-        }else{  // 朝向正确
-            // 修改角速度
-            robot.setRotate(0.0);
-            rotateSpeed = 0.0;
-            // 修改线速度
-            lineSpeed = 5.0;
+    for (int i = 1; i <= workshopCount; i++) {
+        if (i == workshopId) {  // 跳过现在正在交互的工作台
+            continue;
+        }
+        if (workshops[i].getWorkType() > 4) {
+            continue;
+        }
+        needMaterialNum = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
+        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
+        if (good != 0 && find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()) {
+            robotFindworkshops.push_back(workshops[i]);
+        }
+        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
+        if (good == 0 && workshops[i].getProductState() == 1){
+            robotFindworkshops.push_back(workshops[i]);
         }
     }
+
+    // 对robotFindworkshops进行排序，按照距离从近到远
+    sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
+        return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
+    });
+
+    return robotFindworkshops;
 }
+
+double G(Workshop workshop, Robot robot){
+    double reward = 0.0;
+    if(workshop.getWorkType() == 1){
+        reward = 3000.0;
+    } else if(workshop.getWorkType() == 2){
+        reward = 3200.0;
+    } else if(workshop.getWorkType() == 3){
+        reward = 3400.0;
+    } else if(workshop.getWorkType() == 4){
+        reward = 7100.0;
+    } else if(workshop.getWorkType() == 5){
+        reward = 7800.0;
+    } else if(workshop.getWorkType() == 6){
+        reward = 8300.0;
+    } else if(workshop.getWorkType() == 7){
+        reward = 29000.0;
+    }
+    double d = Deal::distance(robot.getPosition(), workshop.getPosition());
+
+    return reward / d;
+}
+
+Workshop Deal::findTargetWorkshop(Robot robot, Workshop *workshops, int workshopCount) {
+    Workshop targetWorkshop;
+
+    int good = robot.getItemType();  // 获取机器人携带物品类型
+    int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
+    vector<int> needMaterialNum1;  // 获取工作台还缺的原材料类型
+    needMaterialNum1.reserve(8);  // 预留8个空间
+    vector<int> needMaterialNum2;  // 获取工作台还缺的原材料类型
+    needMaterialNum2.reserve(8);  // 预留8个空间
+    vector<Workshop> robotFindworkshops;
+    robotFindworkshops.reserve(50);  // 预留50个空间
+
+    for (int i = 1; i <= workshopCount; i++) {
+        if (i == workshopId) {  // 跳过现在正在交互的工作台
+            continue;
+        }
+        needMaterialNum1 = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
+        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
+        if (good != 0 && find(needMaterialNum1.begin(), needMaterialNum1.end(), good) != needMaterialNum1.end()) {
+            robotFindworkshops.push_back(workshops[i]);
+        }
+        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
+        if (good == 0 && workshops[i].getProductState() == 1){
+            if(G(workshops[i], robot) < 0){
+                continue;
+            }
+            int product = workshops[i].getWorkType();  // 获取工作台生产的东西
+            // 已经生产的product能不能卖掉
+            for(int j = 1; i <= workshopCount; i++) {  // 找到能卖的序列
+                if(j == workshopId){  // 跳过现在正在交互的工作台
+                    continue;
+                }
+                needMaterialNum2 = getMaterialNum(workshops[j]);  // 获取工作台还缺的原材料类型
+                if (find(needMaterialNum2.begin(), needMaterialNum2.end(), product) != needMaterialNum2.end()) {
+                        targetWorkshop = workshops[i];
+                        break;
+                }
+            }
+        }
+    }
+
+    if(good != 0){  // 如果机器人带东西，那么就找最近的工作台
+        // 对robotFindworkshops进行排序，按照距离从近到远
+        sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
+            return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
+        });
+        targetWorkshop = robotFindworkshops[0];
+    }
+
+    return targetWorkshop;
+}
+
+
 
 

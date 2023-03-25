@@ -37,9 +37,16 @@ int main() {
             // 交互
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
 
-            workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
+            /*
+            if(frameID <= 50){
+                workshopVector = Deal::initFindWorkshops(robots[robotId], workshops, workshopCount);
+            } else{
+                workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
+            }
+            */
+            Workshop w = Deal::findTargetWorkshop(robots[robotId], workshops, workshopCount);
 
-            Deal::action(robots[robotId], workshopVector[0], lineSpeed, rotate);
+            Deal::action(robots[robotId], w, lineSpeed, rotate);
 
             printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
             printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()
@@ -53,8 +60,8 @@ int main() {
                 printf("buy %d\n", robotId);
                 flags[1] = 0;
             }
-            // printf("destory %d\n", robotId); 暂时不涉及销毁物品
 
+            // printf("destory %d\n", robotId);  // 暂时不涉及销毁物品
             workshopVector.clear();
         }
         printf("OK\n");
