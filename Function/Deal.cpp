@@ -39,8 +39,8 @@ bool Deal::readUntilOK(Robot *robots, Workshop *workshops, int &reward, int &wor
     int workshopNum = 0;
     int workshopId = 0;
     vector<double> vec;
+    vec.reserve(12);  // 预留11个空间
     vector<int> materialNum;
-    vec.reserve(11);  // 预留11个空间
     materialNum.reserve(8);  // 预留5个空间
 
     while (fgets(line, sizeof line, stdin)) {
@@ -142,7 +142,9 @@ int Deal::isNearWorkshop(Robot robot, Workshop* workshops, int workshopCount) {
 // 判断当前工作台缺哪些原材料
 vector<int> Deal::getMaterialNum(const Workshop &workshop) {
     vector<int> materialNum = workshop.getMaterialNum();
+    materialNum.reserve(10);
     vector<int> needMaterialNum = workshop.getNeedMaterialNum();
+    needMaterialNum.reserve(10);
 
     for(int & i : materialNum){
         if(find(needMaterialNum.begin(), needMaterialNum.end(), i) != needMaterialNum.end()){
@@ -194,7 +196,6 @@ void Deal::interactWithWorkshop(Robot &robot, Workshop *workshops, int workshopC
 int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
     Position robotPosition = robot.getPosition();
     Position workshopPosition = workshop.getPosition();
-    Position fuzhuPosition = Position(robotPosition.getX()+1, robotPosition.getY());
 
     double PI = 3.14159265359;
     double toward = robot.getToward();  // 得到robot的朝向
@@ -211,17 +212,16 @@ int Deal:: isRightDirection(Robot &robot, const Workshop& workshop) {
         angle = - angle;
     }
 
-
     double tag = toward - angle;  // 机器人朝向与目的地工作台与水平线的夹角的差值
+    double yu = 0.035;  // 设定一定的阈值
 
-
-    if(tag > 0.023 && tag < PI - 0.023){
+    if(tag > yu && tag < PI - yu){
         return 1;  // 顺时针转
-    }else if(tag > PI + 0.023 && tag < 2*PI - 0.023) {
+    }else if(tag > PI + yu && tag < 2*PI - yu) {
         return -1;  // 逆时针转
-    }else if(tag > -PI + 0.023 && tag < 0 - 0.023) {
+    }else if(tag > -PI + yu && tag < 0 - yu) {
         return -1;  // 逆时针转
-    }else if(tag > -2*PI + 0.023 && tag < -PI - 0.023) {
+    }else if(tag > -2*PI + yu && tag < -PI - yu) {
         return 1;  // 顺时针转
     }
 
@@ -244,6 +244,22 @@ void Deal::action(Robot &robot, const Robot robots[], const Workshop &workshop, 
             rotateSpeed = 0.0;
         }
         lineSpeed = 0.0;
+    }else if(distance(robotPosition, workshop.getPosition()) > 0.4
+    && distance(robotPosition, workshop.getPosition()) < 0.8
+    && rightDirection != 0){
+        if(rightDirection == 1){  // 顺时针转
+            // 修改角速度
+            robot.setRotate(-3.14);
+            rotateSpeed = -3.14;
+            // 修改线速度
+            lineSpeed = 2.0;
+        }else{  // 逆时针转
+            // 修改角速度
+            robot.setRotate(3.14);
+            rotateSpeed = 3.14;
+            // 修改线速度
+            lineSpeed = 2.0;
+        }
     }else{
         if(rightDirection == 1){  // 顺时针转
             // 修改角速度
@@ -265,7 +281,6 @@ void Deal::action(Robot &robot, const Robot robots[], const Workshop &workshop, 
             lineSpeed = 6.0;
         }
     }
-
     // 解决机器人之间碰撞问题
     for(int i = 0; i < 4; i++){
         // 跳过当前机器人
@@ -280,86 +295,7 @@ void Deal::action(Robot &robot, const Robot robots[], const Workshop &workshop, 
             rotateSpeed = 2.0;
             lineSpeed = 1.0;
         }
-        /*
-        // 同向碰撞
-        if((abs(robot.getToward() - robots[i].getToward()) >= 0 && abs(robot.getToward() - robots[i].getToward()) <= 0.2*PI)
-           && distance(robot.getPosition(), robots[i].getPosition()) <= 1.0){
-            // 修改角速度
-            robot.setRotate(.0);
-            rotateSpeed = 0.0;
-            // 修改线速度
-            lineSpeed = 2.0;
-        }
-         */
     }
-}
-
-// 机器人发现一定范围内的工作台，返回工作台向量，方便后续寻路
-vector<Workshop> Deal::findWorkshops(Robot robot, Workshop *workshops, int workshopCount) {
-    vector<Workshop> robotFindworkshops;
-    robotFindworkshops.reserve(50);  // 预留50个空间
-
-    int good = robot.getItemType();  // 获取机器人携带物品类型
-    int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
-    vector<int> needMaterialNum;  // 获取工作台还缺的原材料类型
-    needMaterialNum.reserve(8);  // 预留8个空间
-
-    for (int i = 1; i <= workshopCount; i++) {
-        if (i == workshopId) {  // 跳过现在正在交互的工作台
-            continue;
-        }
-        needMaterialNum = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
-        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
-        if (good != 0 && find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()) {
-            robotFindworkshops.push_back(workshops[i]);
-        }
-        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
-        if (good == 0 && workshops[i].getProductState() == 1){
-            robotFindworkshops.push_back(workshops[i]);
-        }
-    }
-
-    // 对robotFindworkshops进行排序，按照距离从近到远
-    sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
-        return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
-    });
-
-    return robotFindworkshops;
-}
-
-vector<Workshop> Deal::initFindWorkshops(Robot robot, Workshop *workshops, int workshopCount) {
-    vector<Workshop> robotFindworkshops;
-    robotFindworkshops.reserve(50);  // 预留50个空间
-
-    int good = robot.getItemType();  // 获取机器人携带物品类型
-    int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
-    vector<int> needMaterialNum;  // 获取工作台还缺的原材料类型
-    needMaterialNum.reserve(8);  // 预留8个空间
-
-    for (int i = 1; i <= workshopCount; i++) {
-        if (i == workshopId) {  // 跳过现在正在交互的工作台
-            continue;
-        }
-        if (workshops[i].getWorkType() > 4) {
-            continue;
-        }
-        needMaterialNum = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
-        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
-        if (good != 0 && find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()) {
-            robotFindworkshops.push_back(workshops[i]);
-        }
-        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
-        if (good == 0 && workshops[i].getProductState() == 1){
-            robotFindworkshops.push_back(workshops[i]);
-        }
-    }
-
-    // 对robotFindworkshops进行排序，按照距离从近到远
-    sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
-        return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
-    });
-
-    return robotFindworkshops;
 }
 
 double G(const Workshop& workshop, const Robot& robot){
@@ -371,66 +307,74 @@ double G(const Workshop& workshop, const Robot& robot){
     } else if(workshop.getWorkType() == 3){
         reward = 3400.0;
     } else if(workshop.getWorkType() == 4){
-        reward = 7100.0;
+        reward = 7100.0 * 2.0;
     } else if(workshop.getWorkType() == 5){
-        reward = 7800.0;
+        reward = 7800.0 * 2.5;
     } else if(workshop.getWorkType() == 6){
-        reward = 8300.0;
+        reward = 8300.0 * 3.0;
     } else if(workshop.getWorkType() == 7){
-        reward = 29000.0;
+        reward = 29000.0 * 5;
     }
     double d = Deal::distance(robot.getPosition(), workshop.getPosition());
 
     return reward / d;
 }
 
-Workshop Deal::findTargetWorkshop(Robot robot, Workshop *workshops, int workshopCount) {
+bool isCanRecive(const Workshop& workshop, int good){
+    vector<int> needMaterialNum = Deal::getMaterialNum(workshop);
+    if(find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()){
+        return true;
+    }
+    return false;
+}
+
+Workshop Deal::findTargetWorkshop(Robot robot, Workshop *workshops, vector<Workshop>& w1, vector<Workshop>& w2,  int workshopCount) {
     Workshop targetWorkshop;
 
     int good = robot.getItemType();  // 获取机器人携带物品类型
     int workshopId = robot.getWorkshopId();  // 获取机器人当前所在工作台id
-    vector<int> needMaterialNum1;  // 获取工作台还缺的原材料类型
-    needMaterialNum1.reserve(8);  // 预留8个空间
-    vector<int> needMaterialNum2;  // 获取工作台还缺的原材料类型
-    needMaterialNum2.reserve(8);  // 预留8个空间
-    vector<Workshop> robotFindworkshops;
-    robotFindworkshops.reserve(50);  // 预留50个空间
+    vector<int> needMaterialNum;  // 获取工作台还缺的原材料类型
+    needMaterialNum.reserve(10);  // 预留8个空间
 
-    for (int i = 1; i <= workshopCount; i++) {
-        if (i == workshopId) {  // 跳过现在正在交互的工作台
-            continue;
-        }
-        needMaterialNum1 = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
-        // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
-        if (good != 0 && find(needMaterialNum1.begin(), needMaterialNum1.end(), good) != needMaterialNum1.end()) {
-            robotFindworkshops.push_back(workshops[i]);
-        }
-        // 如果机器人没带东西，那么就加入所有生产了东西的工作台
-        if (good == 0 && workshops[i].getProductState() == 1){
-            if(G(workshops[i], robot) < 0){  // 判断是否有利可图
+
+    if(good != 0){
+        for(int i = 1; i<= workshopCount; i++){
+            if(i == workshopId){  // 跳过现在正在交互的工作台
                 continue;
             }
-            int product = workshops[i].getWorkType();  // 获取工作台生产的东西
-            // 已经生产的product能不能卖掉
-            for(int j = 1; j <= workshopCount; j++) {  // 找到能卖的序列
-                if(j == workshopId){  // 跳过现在正在交互的工作台
+            needMaterialNum = getMaterialNum(workshops[i]);  // 获取工作台还缺的原材料类型
+            // 如果工作台上缺的东西和机器人携带物品类型(真带东西了)一致，那么就加入vector
+            if(find(needMaterialNum.begin(), needMaterialNum.end(), good) != needMaterialNum.end()){
+                w1.push_back(workshops[i]);
+            }
+            needMaterialNum.clear();
+        }
+
+        // 对robotFindworkshops进行排序，按照距离从近到远
+        sort(w1.begin(), w1.end(), [&](Workshop a, Workshop b){
+            return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
+        });
+        targetWorkshop = w1[0];
+    }else{
+        // 得到候补序列
+        for(int i = 1; i <= workshopCount; i++){
+            if(i == workshopId){  // 跳过现在正在交互的工作台
+                continue;
+            }
+            for(int j = 1; j<= workshopCount; j++){
+                if(j == i){  // 跳过自己
                     continue;
                 }
-                needMaterialNum2 = getMaterialNum(workshops[j]);  // 获取工作台还缺的原材料类型
-                if (find(needMaterialNum2.begin(), needMaterialNum2.end(), product) != needMaterialNum2.end()) {
-                        targetWorkshop = workshops[i];
-                        break;
+                if(workshops[i].getProductState() == 1 && isCanRecive(workshops[j], workshops[i].getWorkType())){
+                    w2.push_back(workshops[i]);  // 可以买到也能卖出去
                 }
             }
         }
-    }
-
-    if(good != 0){  // 如果机器人带东西，那么就找最近的工作台
-        // 对robotFindworkshops进行排序，按照距离从近到远
-        sort(robotFindworkshops.begin(), robotFindworkshops.end(), [&](Workshop a, Workshop b){
-            return distance(robot.getPosition(), a.getPosition()) < distance(robot.getPosition(), b.getPosition());
+        // 对robotFindworkshops进行排序，按照从值还是不值
+        sort(w2.begin(), w2.end(), [&](Workshop a, Workshop b){
+            return G(a, robot) > G(b, robot);
         });
-        targetWorkshop = robotFindworkshops[0];
+        targetWorkshop = w2[0];
     }
 
     return targetWorkshop;

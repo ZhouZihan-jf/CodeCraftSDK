@@ -11,8 +11,8 @@ Workshop workshops[51];
 
 int main() {
     //  机器人是固定的，所以只需要初始化一次
-    for(int i = 0; i < 4; i++){
-        robots[i] = Robot();
+    for(auto & robot : robots){
+        robot = Robot();
     }
 
     int reward;  //奖励
@@ -21,8 +21,10 @@ int main() {
     puts("OK");//标准输出“ok”并换行
     fflush(stdout);//冲洗流中的信息，缓冲区内的数据写回标准输出的文件中
 
-    vector<Workshop> workshopVector;
-    workshopVector.reserve(51);  // 预留51个空间
+    vector<Workshop> robotFindworkshops;  // 对已经拿到东西的机器人而言的
+    robotFindworkshops.reserve(51);  // 预留50个空间
+    vector<Workshop> robotFindworkshops2;  // 对还没拿到东西的机器人而言的
+    robotFindworkshops2.reserve(51);  // 预留50个空间
 
     int frameID = 0;//帧的id号
     double lineSpeed = 0.0;
@@ -37,14 +39,8 @@ int main() {
             // 交互
             Deal::interactWithWorkshop(robots[robotId], workshops, workshopCount, flags);
 
-            if(frameID <= 50){
-                workshopVector = Deal::initFindWorkshops(robots[robotId], workshops, workshopCount);
-            } else{
-                workshopVector = Deal::findWorkshops(robots[robotId], workshops, workshopCount);
-            }
-            //Workshop w = Deal::findTargetWorkshop(robots[robotId], workshops, workshopCount);
-
-            Deal::action(robots[robotId], robots, workshopVector[0], lineSpeed, rotate);
+            Workshop w = Deal::findTargetWorkshop(robots[robotId], workshops, robotFindworkshops,robotFindworkshops2, workshopCount);
+            Deal::action(robots[robotId], robots, w, lineSpeed, rotate);
 
             printf("forward %d %f\n", robotId, lineSpeed);  // lineSpeed.getModule()
             printf("rotate %d %f\n", robotId, rotate);  // robots[robotId].getRotate()
@@ -58,9 +54,12 @@ int main() {
                 printf("buy %d\n", robotId);
                 flags[1] = 0;
             }
-
-            // printf("destory %d\n", robotId);  // 暂时不涉及销毁物品
-            workshopVector.clear();
+            //if(){
+            //    printf("destroy %d\n", robotId);
+            //}
+            // 统一重置vector
+            robotFindworkshops.clear();
+            robotFindworkshops2.clear();
         }
         printf("OK\n");
         fflush(stdout);

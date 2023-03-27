@@ -17,11 +17,9 @@ public:
     static int isNearWorkshop(Robot robot, Workshop workshops[], int workshopCount);
     static vector<int> getMaterialNum(const Workshop& workshop);
     static void interactWithWorkshop(Robot &robot, Workshop workshops[], int workshopCount, int flags[]);
-    static vector<Workshop> findWorkshops(Robot robot, Workshop workshops[], int workshopCount);
     static int isRightDirection(Robot &robot, const Workshop& workshop);
     static void action(Robot &robot, const Robot robots[], const Workshop& workshop, double& lineSpeed, double& rotateSpeed);
-    static vector<Workshop> initFindWorkshops(Robot robot, Workshop workshops[], int workshopCount);
-    static Workshop findTargetWorkshop(Robot robot, Workshop workshops[], int workshopCount);
+    static Workshop findTargetWorkshop(Robot robot, Workshop workshops[], vector<Workshop>& w1, vector<Workshop>& w2,  int workshopCount);
 };
 
 
